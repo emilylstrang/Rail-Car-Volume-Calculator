@@ -173,6 +173,8 @@ volume_gal = np.array([
     115016, 115132, 115248, 115364, 115480, 115596, 115712, 115828, 115944, 116060,
     116176, 116292, 116408, 116524, 116640
 ])
+st.write(f"⚙️ Max height in chart (inches): {height_in[-1]}")
+st.write(f"⚙️ Max height in chart (cm): {height_in[-1] * 2.54:.2f}")
 
 # Convert user input from cm to inches
 def cm_to_inches(cm):
