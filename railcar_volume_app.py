@@ -188,6 +188,9 @@ def gallons_to_liters(gal):
 
 def liters_to_gallons(liters):
     return liters / 3.78541
+    
+st.write(f"⚠️ Length of height_in: {len(height_in)}")
+st.write(f"⚠️ Length of volume_gal: {len(volume_gal)}")
 
 # Create interpolation functions
 volume_interp = interp1d(height_in, volume_gal, kind='linear', fill_value="extrapolate")
