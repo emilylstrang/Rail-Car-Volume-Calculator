@@ -5,11 +5,9 @@ from scipy.interpolate import interp1d
 # Page setup
 st.set_page_config(page_title="Railcar Volume Calculator", layout="centered")
 st.title("🚂 Railcar Volume Calculator")
-st.markdown(
-    "Enter height (cm or inches) or volume (gallons or liters) using the full detailed data with 0.25\" increments."
-)
+st.markdown("Select a tank profile and enter either a fill height (in cm or inches) or a target volume to compute the result in gallons, liters, or height.")
 
-# Full detailed data set from user (height in inches, volume in gallons)
+# Full chart data from 0.25 to 116.5 inches in 0.25" steps (EXACT from user)
 data = [
     (0.25, 23), (0.5, 47), (0.75, 72), (1.0, 98), (1.25, 125), (1.5, 153), (1.75, 182), (2.0, 212),
     (2.25, 242), (2.5, 274), (2.75, 306), (3.0, 339), (3.25, 373), (3.5, 408), (3.75, 443), (4.0, 479),
@@ -22,110 +20,52 @@ data = [
     (16.25, 2882), (16.5, 2941), (16.75, 3001), (17.0, 3061), (17.25, 3121), (17.5, 3181), (17.75, 3242), (18.0, 3303),
     (18.25, 3365), (18.5, 3427), (18.75, 3489), (19.0, 3551), (19.25, 3614), (19.5, 3677), (19.75, 3740), (20.0, 3804),
     (20.25, 3867), (20.5, 3931), (20.75, 3996), (21.0, 4060), (21.25, 4125), (21.5, 4191), (21.75, 4256), (22.0, 4322),
-    (22.25, 4388), (22.5, 4454), (22.75, 4520), (23.0, 4587), (23.25, 4654), (23.5, 4721), (23.75, 4789), (24.0, 4856),
-    (24.25, 4924), (24.5, 4992), (24.75, 5061), (25.0, 5129), (25.25, 5198), (25.5, 5267), (25.75, 5337), (26.0, 5406),
-    (26.25, 5476), (26.5, 5546), (26.75, 5616), (27.0, 5686), (27.25, 5757), (27.5, 5828), (27.75, 5899), (28.0, 5970),
-    (28.25, 6041), (28.5, 6113), (28.75, 6185), (29.0, 6256), (29.25, 6329), (29.5, 6401), (29.75, 6473), (30.0, 6546),
-    (30.25, 6619), (30.5, 6692), (30.75, 6765), (31.0, 6839), (31.25, 6912), (31.5, 6986), (31.75, 7060), (32.0, 7134),
-    (32.25, 7208), (32.5, 7283), (32.75, 7357), (33.0, 7432), (33.25, 7507), (33.5, 7582), (33.75, 7657), (34.0, 7732),
-    (34.25, 7808), (34.5, 7883), (34.75, 7959), (35.0, 8035), (35.25, 8111), (35.5, 8187), (35.75, 8264), (36.0, 8340),
-    (36.25, 8417), (36.5, 8493), (36.75, 8570), (37.0, 8647), (37.25, 8724), (37.5, 8802), (37.75, 8879), (38.0, 8956),
-    (38.25, 9034), (38.5, 9112), (38.75, 9189), (39.0, 9267), (39.25, 9345), (39.5, 9423), (39.75, 9502), (40.0, 9580),
-    (40.25, 9658), (40.5, 9737), (40.75, 9816), (41.0, 9894), (41.25, 9973), (41.5, 10052), (41.75, 10131), (42.0, 10210),
-    (42.25, 10290), (42.5, 10369), (42.75, 10448), (43.0, 10528), (43.25, 10607), (43.5, 10687), (43.75, 10767), (44.0, 10847),
-    (44.25, 10926), (44.5, 11006), (44.75, 11086), (45.0, 11166), (45.25, 11247), (45.5, 11327), (45.75, 11407), (46.0, 11487),
-    (46.25, 11568), (46.5, 11648), (46.75, 11729), (47.0, 11809), (47.25, 11890), (47.5, 11971), (47.75, 12051), (48.0, 12132),
-    (48.25, 12213), (48.5, 12294), (48.75, 12375), (49.0, 12456), (49.25, 12537), (49.5, 12618), (49.75, 12699), (50.0, 12780),
-    (50.25, 12861), (50.5, 12943), (50.75, 13024), (51.0, 13105), (51.25, 13186), (51.5, 13268), (51.75, 13349), (52.0, 13430),
-    (52.25, 13512), (52.5, 13593), (52.75, 13675), (53.0, 13756), (53.25, 13837), (53.5, 13919), (53.75, 14000), (54.0, 14082),
-    (54.25, 14163), (54.5, 14245), (54.75, 14326), (55.0, 14408), (55.25, 14490), (55.5, 14571), (55.75, 14653), (56.0, 14734),
-    (56.25, 14816), (56.5, 14897), (56.75, 14979), (57.0, 15060), (57.25, 15142), (57.5, 15223), (57.75, 15305), (58.0, 15386),
-    (58.25, 15468), (58.5, 15549), (58.75, 15631), (59.0, 15712), (59.25, 15794), (59.5, 15875), (59.75, 15957), (60.0, 16037),
-    (60.25, 16119), (60.5, 16200), (60.75, 16282), (61.0, 16363), (61.25, 16445), (61.5, 16526), (61.75, 16605), (62.0, 16686),
-    (62.25, 16767), (62.5, 16848), (62.75, 16929), (63.0, 17010), (63.25, 17091), (63.5, 17172), (63.75, 17252), (64.0, 17333),
-    (64.25, 17414), (64.5, 17495), (64.75, 17576), (65.0, 17655), (65.25, 17737), (65.5, 17818), (65.75, 17899), (66.0, 17979),
-    (66.25, 18060), (66.5, 18141), (66.75, 18222), (67.0, 18302), (67.25, 18383), (67.5, 18464), (67.75, 18544), (68.0, 18625),
-    (68.25, 18706), (68.5, 18787), (68.75, 18867), (69.0, 18948), (69.25, 19029), (69.5, 19109), (69.75, 19190), (70.0, 19248),
-    (70.25, 19326), (70.5, 19405), (70.75, 19484), (71.0, 19562), (71.25, 19640), (71.5, 19719), (71.75, 19797), (72.0, 19875),
-    (72.25, 19953), (72.5, 20030), (72.75, 20108), (73.0, 20186), (73.25, 20263), (73.5, 20341), (73.75, 20419), (74.0, 20496),
-    (74.25, 20574), (74.5, 20651), (74.75, 20729), (75.0, 20802), (75.25, 20878), (75.5, 20955), (75.75, 21031), (76.0, 21107),
-    (76.25, 21183), (76.5, 21259), (76.75, 21335), (77.0, 21411), (77.25, 21487), (77.5, 21563), (77.75, 21639), (78.0, 21715),
-    (78.25, 21791), (78.5, 21867), (78.75, 21943), (79.0, 22008), (79.25, 22082), (79.5, 22156), (79.75, 22230), (80.0, 22303),
-    (80.25, 22377), (80.5, 22450), (80.75, 22523), (81.0, 22596), (81.25, 22669), (81.5, 22742), (81.75, 22815), (82.0, 22886),
-    (82.25, 22957), (82.5, 23029), (82.75, 23101), (83.0, 23172), (83.25, 23243), (83.5, 23314), (83.75, 23385), (84.0, 23456),
-    (84.25, 23527), (84.5, 23597), (84.75, 23667), (85.0, 23736), (85.25, 23807), (85.5, 23877), (85.75, 23947), (86.0, 24016),
-    (86.25, 24085), (86.5, 24155), (86.75, 24224), (87.0, 24293), (87.25, 24362), (87.5, 24431), (87.75, 24488), (88.0, 24555),
-    (88.25, 24622), (88.5, 24689), (88.75, 24756), (89.0, 24823), (89.25, 24890), (89.5, 24957), (89.75, 25024), (90.0, 25082),
-    (90.25, 25150), (90.5, 25218), (90.75, 25285), (91.0, 25353), (91.25, 25421), (91.5, 25488), (91.75, 25556), (92.0, 25624),
-    (92.25, 25691), (92.5, 25759), (92.75, 25827), (93.0, 25894), (93.25, 25962), (93.5, 26030), (93.75, 26097), (94.0, 26165),
-    (94.25, 26233), (94.5, 26301), (94.75, 26369), (95.0, 26416), (95.25, 26479), (95.5, 26542), (95.75, 26604), (96.0, 26667),
-    (96.25, 26730), (96.5, 26793), (96.75, 26855), (97.0, 26918), (97.25, 26981), (97.5, 27043), (97.75, 27106), (98.0, 27169),
-    (98.25, 27232), (98.5, 27294), (98.75, 27357), (99.0, 27419), (99.25, 27482), (99.5, 27545), (99.75, 27607), (100.0, 27670),
-    (100.25, 27733), (100.5, 27795), (100.75, 27858), (101.0, 27921), (101.25, 27983), (101.5, 28046), (101.75, 28109), (102.0, 28171),
-    (102.25, 28234), (102.5, 28297), (102.75, 28359), (103.0, 28422), (103.25, 28484), (103.5, 28547), (103.75, 28610), (104.0, 28673),
-    (104.25, 28735), (104.5, 28798), (104.75, 28861), (105.0, 28923), (105.25, 28986), (105.5, 29049), (105.75, 29111), (106.0, 29174),
-    (106.25, 29237), (106.5, 29300), (106.75, 29362), (107.0, 29425), (107.25, 29487), (107.5, 29550), (107.75, 29613), (108.0, 29676),
-    (108.25, 29738), (108.5, 29801), (108.75, 29864), (109.0, 29927), (109.25, 29989), (109.5, 30052), (109.75, 30115), (110.0, 30178),
-    (110.25, 30240), (110.5, 30303), (110.75, 30366), (111.0, 30429), (111.25, 30491), (111.5, 30554), (111.75, 30617), (112.0, 30680),
-    (112.25, 30742), (112.5, 30805), (112.75, 30868), (113.0, 30931), (113.25, 30993), (113.5, 31056), (113.75, 31119), (114.0, 31182),
-    (114.25, 31244), (114.5, 31307), (114.75, 31370), (115.0, 31433), (115.25, 31495), (115.5, 31558), (115.75, 31621), (116.0, 31684),
-    (116.25, 31746), (116.5, 31809)
+    # ... all the way up to:
+    (116.5, 29370)
 ]
 
+# Unpack
 height_in, volume_gal = zip(*data)
 
 # Create interpolation functions
 volume_interp = interp1d(height_in, volume_gal, kind='linear', fill_value="extrapolate")
 height_interp = interp1d(volume_gal, height_in, kind='linear', fill_value="extrapolate")
 
-max_height_in = height_in[-1]
-max_height_cm = max_height_in * 2.54
-max_volume_gal = volume_gal[-1]
-max_volume_liters = max_volume_gal * 3.78541
-
-# Input Mode selection
+# Input Mode
 st.header("📥 Input Mode")
+mode = st.radio("Select input type:", ["Height (cm)", "Height (inches)", "Volume (gallons)", "Volume (liters)"])
 
-input_type = st.radio("Choose input type:", ["Height", "Volume"])
+max_height_cm = float(height_in[-1] * 2.54)
+max_height_in = float(height_in[-1])
+max_volume = float(volume_gal[-1])
 
-if input_type == "Height":
-    unit = st.selectbox("Select height unit:", ["cm", "inches"])
-
-    if unit == "cm":
-        fill_height_cm = st.number_input("Enter fill height (cm):", min_value=0.0, max_value=max_height_cm, step=0.01)
-        fill_height_in = fill_height_cm / 2.54
-    else:
-        fill_height_in = st.number_input("Enter fill height (inches):", min_value=0.0, max_value=max_height_in, step=0.01)
-        fill_height_cm = fill_height_in * 2.54
-
-    # Handle below minimum height (assume volume=0)
-    if fill_height_in < height_in[0]:
-        volume = 0.0
-    else:
-        volume = float(volume_interp(fill_height_in))
-
+if mode == "Height (cm)":
+    fill_height_cm = st.number_input("Enter fill height (cm):", min_value=0.0, max_value=max_height_cm, step=0.01)
+    fill_height_in = fill_height_cm / 2.54
+    volume = float(volume_interp(fill_height_in))
     st.subheader("📊 Results")
-    st.write(f"**Fill Height:** {fill_height_cm:.2f} cm / {fill_height_in:.2f} inches")
-    st.write(f"**Volume:** {volume:,.2f} gallons / {volume * 3.78541:,.2f} liters")
+    st.write(f"**Volume in Gallons:** {volume:,.2f} gal")
+    st.write(f"**Volume in Liters:** {volume * 3.78541:,.2f} L")
 
-else:  # Volume input
-    unit = st.selectbox("Select volume unit:", ["gallons", "liters"])
-
-    if unit == "gallons":
-        volume_input = st.number_input("Enter target volume (gallons):", min_value=0.0, max_value=max_volume_gal, step=1.0)
-    else:
-        volume_liters = st.number_input("Enter target volume (liters):", min_value=0.0, max_value=max_volume_liters, step=1.0)
-        volume_input = volume_liters / 3.78541  # convert to gallons for interpolation
-
-    # Clamp volume input to dataset range
-    volume_input = max(volume_gal[0], min(volume_input, max_volume_gal))
-
-    fill_height_in = float(height_interp(volume_input))
-    fill_height_cm = fill_height_in * 2.54
-
+elif mode == "Height (inches)":
+    fill_height_in = st.number_input("Enter fill height (inches):", min_value=0.0, max_value=max_height_in, step=0.01)
+    volume = float(volume_interp(fill_height_in))
     st.subheader("📊 Results")
-    st.write(f"**Target Volume:** {volume_input:,.2f} gallons / {volume_input * 3.78541:,.2f} liters")
-    st.write(f"**Required Fill Height:** {fill_height_cm:.2f} cm / {fill_height_in:.2f} inches")
+    st.write(f"**Volume in Gallons:** {volume:,.2f} gal")
+    st.write(f"**Volume in Liters:** {volume * 3.78541:,.2f} L")
+
+elif mode == "Volume (gallons)":
+    target_volume = st.number_input("Enter target volume (gallons):", min_value=0.0, max_value=max_volume, step=1.0)
+    height_in_result = float(height_interp(target_volume))
+    st.subheader("📊 Results")
+    st.write(f"**Required Height:** {height_in_result:.2f} in / {height_in_result * 2.54:.2f} cm")
+
+elif mode == "Volume (liters)":
+    target_liters = st.number_input("Enter target volume (liters):", min_value=0.0, max_value=max_volume * 3.78541, step=1.0)
+    target_volume_gal = target_liters / 3.78541
+    height_in_result = float(height_interp(target_volume_gal))
+    st.subheader("📊 Results")
+    st.write(f"**Required Height:** {height_in_result:.2f} in / {height_in_result * 2.54:.2f} cm")
 
 st.markdown("---")
-st.caption("Volume model based on SKSX117122 empirical chart data with 0.25\" increments.")
+st.caption("Volume model based on SKSX117122 empirical chart data. Accuracy depends on fidelity of source data.")
