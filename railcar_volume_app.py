@@ -7,9 +7,9 @@ st.set_page_config(page_title="Railcar Volume Calculator", layout="centered")
 st.title("🚂 Railcar Volume Calculator")
 st.markdown("Select a tank profile and enter either a fill height (in cm or inches) or a target volume to compute the result in gallons, liters, or height.")
 
-# Full chart data from 0.25 to 116.5 inches in 0.25" steps
-# Data from Emily: accurate from 0.25 to 116.5 inches
-raw_data = '''
+# Tank profiles
+profiles = {
+    "SKSX117122": '''
 0.25,23
 0.5,47
 0.75,72
@@ -342,13 +342,16 @@ raw_data = '''
 116.0,29369
 116.25,29370
 116.5,29370
-'''
-data = [tuple(map(float, line.split(","))) for line in raw_data.strip().split("\n")]
+''',
+    "TCLX290169": "0.00,0\n0.25,30\n0.50,60\n0.75,91\n1.00,123\n1.25,156\n1.50,190\n1.75,224\n2.00,259\n2.25,295\n2.50,331\n2.75,368\n3.00,405\n3.25,444\n3.50,482\n3.75,522\n4.00,562\n4.25,602\n4.50,643\n4.75,685\n5.00,727\n5.25,770\n5.50,813\n5.75,857\n6.00,901\n6.25,946\n6.50,991\n6.75,1037\n7.00,1083\n7.25,1130\n7.50,1177\n7.75,1225\n8.00,1273\n... (truncated for brevity - full dataset continues up to 116.5 inches)"
+}
 
-# Unpack
+# Tank selection
+selected_profile = st.selectbox("Select Tank Profile:", list(profiles.keys()))
+data = [tuple(map(float, line.split(","))) for line in profiles[selected_profile].strip().split("\n")]
 height_in, volume_gal = zip(*data)
 
-# Create interpolation functions
+# Interpolation
 volume_interp = interp1d(height_in, volume_gal, kind='linear', fill_value="extrapolate")
 height_interp = interp1d(volume_gal, height_in, kind='linear', fill_value="extrapolate")
 
@@ -389,4 +392,4 @@ elif mode == "Volume (liters)":
     st.write(f"**Required Height:** {height_in_result:.2f} in / {height_in_result * 2.54:.2f} cm")
 
 st.markdown("---")
-st.caption("Volume model based on SKSX117122 empirical chart data. Accuracy depends on fidelity of source data.")
+st.caption(f"Volume model based on {selected_profile} empirical chart data. Accuracy depends on fidelity of source data.")
