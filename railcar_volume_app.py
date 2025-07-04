@@ -1,80 +1,63 @@
 import streamlit as st
 import numpy as np
-from scipy.optimize import root_scalar
+from scipy.interpolate import interp1d
 
-# Set page configuration
+# Page config
 st.set_page_config(page_title="Railcar Volume Calculator", layout="centered")
 
 st.title("🚂 Railcar Volume Calculator")
 st.markdown(
-    "Select a tank profile and enter either a fill height (cm) or a target volume "
-    "(gallons or liters) to compute the corresponding volume or height."
+    "Enter a fill height (cm) or target volume (gallons or liters) "
+    "to get the corresponding volume or height based on the empirical tank chart."
 )
 
-# Define polynomial coefficients for each tank profile
-# Note: Coefficients map height (inches) to volume (gallons)
-tank_profiles = {
-    "Tank A (SKSX117122)": [-2.0529e-6, 5.5890e-4, -0.074798, 5.6698, 102.1894, -11.6755],
-    "Tank B (Example Linear)": [0, 0, 0, 0, 100, 0],  # Placeholder linear model
-    "Tank C (Custom)": [1e-6, -2e-4, 0.01, 0.5, 90, 5],  # Placeholder custom model
-}
+# Tank chart data (height in inches vs volume in gallons)
+height_in = np.array([
+    0.25, 0.50, 0.75, 1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50,
+    2.75, 3.00, 3.25, 3.50, 3.75, 4.00, 4.25, 4.50, 4.75, 5.00,
+    5.25, 5.50, 5.75, 6.00, 6.25, 6.50, 6.75, 7.00, 7.25, 7.50,
+    7.75, 8.00, 8.25, 8.50, 8.75
+])
+volume_gal = np.array([
+    23, 47, 72, 98, 125, 153, 182, 212, 242, 274,
+    306, 339, 373, 408, 443, 479, 516, 553, 591, 629,
+    669, 709, 749, 790, 832, 874, 916, 960, 1004, 1048,
+    1093, 1138, 1184, 1230, 1277
+])
 
-selected_tank = st.selectbox("Select Tank Profile:", list(tank_profiles.keys()))
-coefs = tank_profiles[selected_tank]
+# Interpolation functions
+volume_from_height = interp1d(height_in, volume_gal, kind='cubic', fill_value="extrapolate")
+height_from_volume = interp1d(volume_gal, height_in, kind='cubic', fill_value="extrapolate")
 
 st.header("📥 Input Mode")
 mode = st.radio("Select input type:", ["Height (cm)", "Volume (gallons)", "Volume (liters)"])
 
-def volume_from_height(height_in):
-    """Calculate volume in gallons from height in inches using polynomial."""
-    return np.polyval(coefs, height_in)
-
 if mode == "Height (cm)":
-    height_cm = st.number_input("Fill Height (cm)", min_value=0.0, max_value=254.0, step=0.1)
-    height_in = height_cm / 2.54
-    volume_gal = volume_from_height(height_in)
-    volume_liters = volume_gal * 3.78541
+    height_cm = st.number_input("Fill Height (cm)", min_value=0.0, max_value=22.2, step=0.1)
+    height_in_val = height_cm / 2.54
+    volume = volume_from_height(height_in_val)
+    volume_liters = volume * 3.78541
 
     st.subheader("📊 Results")
-    st.write(f"**Volume:** {volume_gal:,.2f} gallons")
-    st.write(f"**Volume:** {volume_liters:,.2f} liters")
+    st.write(f"**Volume:** {volume:.2f} gallons")
+    st.write(f"**Volume:** {volume_liters:.2f} liters")
 
 elif mode == "Volume (gallons)":
-    target_gal = st.number_input("Target Volume (gallons)", min_value=0.0, step=0.1)
+    target_gal = st.number_input("Target Volume (gallons)", min_value=23.0, max_value=1277.0, step=1.0)
+    height_in_val = height_from_volume(target_gal)
+    height_cm = height_in_val * 2.54
 
-    def error_func(h):
-        return volume_from_height(h) - target_gal
-
-    try:
-        result = root_scalar(error_func, bracket=[0, 100], method='brentq')
-        if result.converged:
-            height_in = result.root
-            height_cm = height_in * 2.54
-            st.subheader("📊 Results")
-            st.write(f"**Required Fill Height:** {height_cm:.2f} cm")
-        else:
-            st.error("Calculation did not converge. Please check input values.")
-    except ValueError:
-        st.error("Target volume is out of range for this tank profile.")
+    st.subheader("📊 Results")
+    st.write(f"**Required Fill Height:** {height_cm:.2f} cm")
 
 elif mode == "Volume (liters)":
-    target_liters = st.number_input("Target Volume (liters)", min_value=0.0, step=0.1)
+    target_liters = st.number_input("Target Volume (liters)", min_value=87.1, max_value=4834.7, step=1.0)
     target_gal = target_liters / 3.78541
+    height_in_val = height_from_volume(target_gal)
+    height_cm = height_in_val * 2.54
 
-    def error_func(h):
-        return volume_from_height(h) - target_gal
-
-    try:
-        result = root_scalar(error_func, bracket=[0, 100], method='brentq')
-        if result.converged:
-            height_in = result.root
-            height_cm = height_in * 2.54
-            st.subheader("📊 Results")
-            st.write(f"**Required Fill Height:** {height_cm:.2f} cm")
-        else:
-            st.error("Calculation did not converge. Please check input values.")
-    except ValueError:
-        st.error("Target volume is out of range for this tank profile.")
+    st.subheader("📊 Results")
+    st.write(f"**Required Fill Height:** {height_cm:.2f} cm")
 
 st.markdown("---")
-st.caption("Model based on selected empirical or theoretical gauge tables.")
+st.caption("Based on provided empirical tank gauge chart data.")
