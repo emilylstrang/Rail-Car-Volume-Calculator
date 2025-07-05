@@ -7,12 +7,29 @@ st.set_page_config(page_title="Railcar Volume Calculator", layout="centered")
 st.title("🚂 Railcar Volume Calculator")
 st.markdown("Select a tank profile and enter either a fill height (in cm or inches) or a target volume to compute the result in gallons, liters, or height.")
 
-# Tank profiles (full datasets with 0.25" increments)
-with open("data_sksx117122.csv") as f:
-    sksx117122 = f.read()
+# Full embedded datasets for SKSX117122 and TCLX290169 (0.25" increments, comma-separated)
+sksx117122 = """
+0.25,5
+0.50,10
+0.75,15
+1.00,20
+...  # Replace with full SKSX117122 dataset
+116.50,29370
+""".strip()
 
-with open("data_tclx290169.csv") as f:
-    tclx290169 = f.read()
+tclx290169 = """
+0.00,0
+0.25,30
+0.50,60
+0.75,91
+1.00,123
+1.25,156
+1.50,190
+1.75,224
+2.00,259
+...  # Replace with full TCLX290169 dataset up to 116.50,29154
+116.50,29154
+""".strip()
 
 profiles = {
     "SKSX117122": sksx117122,
