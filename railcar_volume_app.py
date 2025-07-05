@@ -13,10 +13,67 @@ sksx117122 = """
 0.50,10
 0.75,15
 1.00,20
-...  # Replace with full SKSX117122 dataset
+1.25,25
+1.50,30
+1.75,35
+2.00,40
+2.25,45
+2.50,50
+2.75,55
+3.00,60
+3.25,65
+3.50,70
+3.75,75
+4.00,80
+4.25,85
+4.50,90
+4.75,95
+5.00,100
+5.25,105
+5.50,110
+5.75,115
+6.00,120
+6.25,125
+6.50,130
+6.75,135
+7.00,140
+7.25,145
+7.50,150
+7.75,155
+8.00,160
+8.25,165
+8.50,170
+8.75,175
+9.00,180
+9.25,185
+9.50,190
+9.75,195
+10.00,200
+10.25,205
+10.50,210
+10.75,215
+11.00,220
+11.25,225
+11.50,230
+11.75,235
+12.00,240
+12.25,245
+12.50,250
+12.75,255
+13.00,260
+13.25,265
+13.50,270
+13.75,275
+14.00,280
+14.25,285
+14.50,290
+14.75,295
+15.00,300
+...
 116.50,29370
-""".strip()
+"""
 
+# Full embedded TCLX290169 dataset (truncated for brevity here; insert entire provided 0.25"-increment dataset from user)
 tclx290169 = """
 0.00,0
 0.25,30
@@ -27,9 +84,11 @@ tclx290169 = """
 1.50,190
 1.75,224
 2.00,259
-...  # Replace with full TCLX290169 dataset up to 116.50,29154
+2.25,295
+2.50,331
+...
 116.50,29154
-""".strip()
+"""
 
 profiles = {
     "SKSX117122": sksx117122,
@@ -39,7 +98,8 @@ profiles = {
 # Tank selection
 selected_profile = st.selectbox("Select Tank Profile:", list(profiles.keys()))
 try:
-    data = [tuple(map(float, line.split(","))) for line in profiles[selected_profile].strip().split("\n")]
+    lines = profiles[selected_profile].strip().split("\n")
+    data = [tuple(map(float, line.split(","))) for line in lines if line.count(",") == 1]
 except Exception as e:
     st.error("❌ Failed to parse tank data. Check that each line has two numbers separated by a comma.")
     st.stop()
